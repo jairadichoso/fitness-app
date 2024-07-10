@@ -1,131 +1,121 @@
-const Workout = require("../models/Workout");
-const User = require('../models/User');
+const Workout = require('../models/Workouts');
 
-module.exports.addWorkout = (req, res) => {
-		return Workout.findOne({ name: req.body.name }).then(existingWorkout => {
+module.exports.addWorkout = async (req, res) => {
 
-			let newWorkout = new Workout({
-				userId: req.user.id,
-				name : req.body.name,
-				duration : req.body.duration
-			});
+    const workout = await Workout.findOne({ name: req.body.name });
+    if (workout) {
+        return res.status(409).send({ error: 'Workout already exists' })
+    }
 
-			if(existingWorkout) {
-				return res.status(409).send({ error : 'Workout already exists' });
-			}
+    let newWorkout = new Workout({
+        name: req.body.name,
+        userId: req.user.id,
+        duration: req.body.duration,
+    })
 
-			return newWorkout.save().then(savedWorkout => res.status(201).send(savedWorkout)).catch(saveError => {
+    try {
+        const savedWorkout = await newWorkout.save();
+        return res.status(201).send(savedWorkout);
+    }
+    catch (err) {
+        console.log('Error in adding the course', err);
+        return res.status(500).send({ message: 'Error in adding workout' })
+    }
+}
 
-				console.error('Error in saving the workout: ', saveError);
+//Get all Workouts
+module.exports.getWorkouts = async (req, res) => {
 
-				res.status(500).send({ error : 'Failed to save the workout' });
-			});
-
-		}).catch(findErr => {
-
-			console.error('Error in finding the workout: ', findErr);
-
-			return res.status(500).send({ message: "Error in finding the workout" });
-		})
-}; 
-
-module.exports.getMyWorkouts = (req, res) => {
-
-	return Workout.find({}).then(workouts => {
-
-		if(workouts.length > 0) {
-
-			return res.status(200).send({ workouts: workouts });
-
-		} else {
-
-			return res.status(200).send({ message : 'No workouts found.' })
-		}
-		
-	}).catch(findErr => {
-
-		console.error('Error in finding all workouts: ', findErr);
-
-		return res.status(500).send({ error : 'Error finding workouts.'})
-	});
-};
-
-module.exports.updateWorkout = (req, res) => {
-
-	let workoutId = req.params.workoutId;
-
-	let updatedWorkout = {
-		name : req.body.name,
-		duration : req.body.duration
-	};
-
-	return Workout.findByIdAndUpdate(workoutId, updatedWorkout).then(updatedWorkout => {
-
-		if (updatedWorkout) {
-
-            return res.status(200).send({
-            	message : 'Workout updated successfully',
-            	updatedWorkout : updatedWorkout
-            });
-
-        } else {
-
-            return res.status(404).send({ error : 'Workout not found'});
+    const workouts = await Workout.find({ userId: req.user.id });
+    try {
+        if (workouts.length > 0) {
+            return res.status(200).send({ workouts })
         }
+        else {
+            return res.status(200).send({ message: 'No Workout found' })
+        }
+    }
+    catch (err) {
+        console.error('Error in getting workouts: ', err);
+        return errors.status(500).send({ error: 'Error in getting workout' })
+    }
+}
 
-	}).catch(updateErr => {
+//Get single Workout
+module.exports.getWorkout = async (req, res) => {
+    let workoutId = req.params.workoutId;
+    try {
+        const workout = await Workout.findOne({ userId: req.user.id, _id: workoutId });
+        if (!workout) {
+            return res.status(404).send({ error: "Workout not found" })
+        }
+        return res.status(200).send({ workout });
+    }
+    catch (err) {
+        console.error('Error in getting workout: ', err);
+        return errors.status(500).send({ error: 'Error in getting workout' })
+    }
 
-		console.error('Error in updating the workout: ', updateErr);
+}
 
-		return res.status(500).send({ error : 'Error in updating the workout' });
-	});
+module.exports.updateWorkout = async (req, res) => {
+    let workoutId = req.params.workoutId;
+    let newWorkout = {
+        name: req.body.name,
+        duration: req.body.duration,
+    }
+
+    try {
+        const updatedWorkout = await Workout.findByIdAndUpdate(workoutId, newWorkout);
+        if (updatedWorkout) {
+            return res.status(200).send({
+                message: "Workout updated successfully",
+                updatedWorkout
+            })
+        }
+    }
+    catch (err) {
+        console.error('Error in updating workout: ', err);
+        return res.status(500).send({ error: 'Error in updating the workout ' })
+    }
 }
 
 module.exports.deleteWorkout = async (req, res) => {
-
     let workoutId = req.params.workoutId;
-    
-	try {
+    try {
         const deletedWorkout = await Workout.findByIdAndDelete(workoutId);
-        if(!deletedWorkout){
-            return res.status(404).send({ error: 'Workout not found'});
+        if (!deletedWorkout) {
+            return res.status(404).send({ error: 'Workout not found' });
         }
 
-        return res.status(200).send({ message: 'Workout deleted successfully'});
+        return res.status(200).send({ message: 'Workout deleted successfully' });
     }
-
     catch (err) {
-        console.log('Error in deleting workout: ', err);
-        return res.status(500).send({error : 'Error in deleting workout'});
+        console.log('error in deleting workout: ', err);
+        return res.status(500).send({ error: 'error in deleting workout' });
     }
 
 }
 
-module.exports.completeWorkoutStatus = (req, res) => {
+module.exports.completeWorkout = async (req, res) => {
+    let workoutId = req.params.workoutId;
 
-    let updateWorkoutStatus = {
-        status: 'completed'
-    }
-    
-    return Workout.findByIdAndUpdate(req.params.workoutId, updateWorkoutStatus).then(updateWorkout => {
+    try {
+        updatedWorkout = await Workout.findById(workoutId);
 
-        if (updateWorkout) {
-
-            res.status(200).send({ 
-            	message: 'Workout status updated successfully',
-            	updatedWorkout: updateWorkout
-            });
-
-        } else {
-            res.status(404).send({ error : 'Workout not found'});
+        if (!updatedWorkout) {
+            return res.status(404).send({ error: 'Workout not found' });
         }
-    }).catch(updateErr => {
 
-		console.error('Error in completing the workout: ', updateErr);
-
-		return res.status(500).send({ error : 'Failed to complete a workout' });
-	});
-};
-
-
-
+        updatedWorkout.status = 'completed'
+        await updatedWorkout.save();
+        return res.status(200).send({
+            message: 'Workout status updated successfully',
+            updatedWorkout
+        })
+    }
+    catch(err) {
+        console.log('error in completing workout: ', err);
+        return res.status(500).send({ error: 'error in completing workout' });
+    }
+}

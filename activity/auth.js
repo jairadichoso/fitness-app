@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const secret = 'inventoryManagement';
+const secret = 'FitnessAppAPI';
 
 // [SECTION] JSON Web Tokens
 
