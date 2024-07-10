@@ -30,8 +30,12 @@ module.exports.addWorkout = (req, res) => {
 }; 
 
 module.exports.getMyWorkouts = (req, res) => {
+	
+	if (!req.user || !req.user.id) {
+        return res.status(401).send({ error: 'Unauthorized' });
+    }
 
-	return Workout.find({}).then(workouts => {
+	return Workout.find({ userId: req.user.id }).then(workouts => {
 
 		if(workouts.length > 0) {
 
