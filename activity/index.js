@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-mongoose.connect('mongodb+srv://admin:admin1234@cluster0.hwilf0l.mongodb.net/Movie-Catalog-System?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect('mongodb+srv://admin:admin1234@cluster0.hwilf0l.mongodb.net/Fitness-App?retryWrites=true&w=majority&appName=Cluster0');
 
 let db = mongoose.connection;
 
