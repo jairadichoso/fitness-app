@@ -6,7 +6,6 @@ const cors = require('cors')
 const app = express();
 const port = 4000;
 
-
 const workoutRoutes = require("./routes/workout");
 const userRoutes = require("./routes/user");
 
@@ -23,7 +22,6 @@ db.once('open', () => console.log(`We're now connected to MongoDb Atlas`));
 
 app.use("/workouts", workoutRoutes);
 app.use("/users", userRoutes);
-
 
 if(require.main === module){
 	app.listen(process.env.PORT || 4000, () => {

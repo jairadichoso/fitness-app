@@ -1,7 +1,6 @@
-const User = require('../models/Users');
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const auth = require('../auth');
-
 
 module.exports.registerUser = (req, res) => {
 
@@ -34,7 +33,7 @@ module.exports.loginUser = (req, res) => {
 
 				return res.status(401).send({ error: 'No Email Found'});
 
-			} else {// compareSync() method to compare the login password and the database password. it decrypts the database password and then compare it to the request body password. it will return true if it matches and will return false otherwise
+			} else {
 				const isPasswordCorrect = bcrypt.compareSync(req.body.password, user.password);
 				if(isPasswordCorrect) {
 

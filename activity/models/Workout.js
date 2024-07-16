@@ -1,27 +1,28 @@
 const mongoose = require('mongoose');
 
 const workoutSchema = new mongoose.Schema({
-    userId: {
-        type: String,
-        required: [true, 'ID is required']
-    },
+
     name: {
         type: String,
-        required: [true, 'Name is required']
+        required: [true, 'Workout Name is required']
+    },
+    userId: {
+        type: String,
+        required: [true, 'userId is required']
     },
     duration: {
         type: String,
-        required: [true, 'Duration is required']
+        required: [true, 'Course Price is required']
     },
     status: {
         type: String,
-        default: 'pending'
+        default: "pending"
     },
     dateAdded: {
         type: Date,
         default: Date.now
-    },
-   
+    }
+    
 });
 
 module.exports = mongoose.model('Workout', workoutSchema);
